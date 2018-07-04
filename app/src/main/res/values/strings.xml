@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Zaka</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_un_authenticated">UnAuthenticatedActivity</string>
+    <string name="create_an_account">Creer Un Compte</string>
+    <string name="login">Me Connecter</string>
+    <string name="title_activity_update_profile">UpdateProfileActivity</string>
+    <string name="full_name">Full Name</string>
+    <string name="update_details">Update Details</string>
+    <string name="username">userName</string>
+    <string name="email">Email</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="title_activity_change_username">ChangeUsernameActivity</string>
+    <string name="title_activity_change_password">ChangePasswordActivity</string>
+    <string name="activate">Activate</string>
+    <string name="title_activity_users">UsersActivity</string>
+    <string name="title_activity_add_user">AddUserActivity</string>
+</resources>
