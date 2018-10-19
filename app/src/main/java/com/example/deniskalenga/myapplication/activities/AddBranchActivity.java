@@ -7,26 +7,25 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.deniskalenga.myapplication.R;
 import com.example.deniskalenga.myapplication.http.VolleySingleton;
-import com.example.deniskalenga.myapplication.models.Business;
+import com.example.deniskalenga.myapplication.utils.SessionManagement;
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,115 +33,130 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-//import cn.pedant.SweetAlert.SweetAlertDialog;
-
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static com.example.deniskalenga.myapplication.Keys.BACKEND_URL;
 
-public class RegisterActivity extends AppCompatActivity {
+public class AddBranchActivity extends AppCompatActivity {
 
-    EditText businessNameTxt, adminFullnameTxt, adminEmailTxt, adminPhoneTxt, adminPasswordTxt;
+    EditText name, email, phone, address;
     Button submit;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        setContentView(R.layout.activity_add_branch);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        businessNameTxt =findViewById(R.id.businessName);
-        adminEmailTxt = findViewById(R.id.email);
-        adminFullnameTxt=findViewById(R.id.fullName);
-        adminPhoneTxt = findViewById(R.id.phoneNumber);
-        adminPasswordTxt= findViewById(R.id.pin);
-        submit = findViewById(R.id.submit);
 
-       submit.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               registerBusiness();
-           }
-       });
+        name = findViewById(R.id.branchName);
+        email = findViewById(R.id.branchEmail);
+        phone = findViewById(R.id.branchPhone);
+        address = findViewById(R.id.branchAddress);
+
+        submit = findViewById(R.id.submit);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (validateFields()){
+                    postBranch();
+                }else {
+                    Toast.makeText(getApplicationContext(), "Please provide all required info", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
 
-    public void registerBusiness(){
+    public boolean validateFields(){
+        if (!name.getText().toString().equals("")
+                && !email.getText().toString().equals("")
+                && !phone.getText().toString().equals("")
+                && !address.getText().toString().equals("")){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public void postBranch(){
+
         final SweetAlertDialog pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         pDialog.setTitleText("Loading");
         pDialog.setCancelable(false);
         pDialog.show();
+
         JSONObject object;
-        Map<String, String> map = new HashMap<>();
-        map.put("name",businessNameTxt.getText().toString());
-        map.put("adminEmail",adminEmailTxt.getText().toString());
-        map.put("adminFullName",adminFullnameTxt.getText().toString());
-        map.put("adminPhoneNumber",adminPhoneTxt.getText().toString());
-        map.put("adminPassword",adminPasswordTxt.getText().toString());
-
-        object = new JSONObject(map);
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, BACKEND_URL+"/businesses/register", object, new Response.Listener<JSONObject>() {
+        Map<String, String>data = new HashMap<>();
+        data.put("name", name.getText().toString());
+        data.put("address", address.getText().toString());
+        data.put("phone", phone.getText().toString());
+        data.put("address", address.getText().toString());
+        object = new JSONObject(data);
+        Long businessId = Long.valueOf(new SessionManagement(getApplicationContext()).getBusinessId());
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, BACKEND_URL+"/branches/add?businessId="+businessId+"&isMain=no", object, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-               pDialog.dismiss();
-                new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.SUCCESS_TYPE)
-                        .setTitleText("Good job!")
-                        .setContentText("Your business has been created")
-                        .setConfirmText("Login")
-                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-                            @Override
-                            public void onClick(SweetAlertDialog sweetAlertDialog) {
-                                finish();
-                                startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                            }
-                        })
-                        .show();
+                pDialog.dismiss();
+                try {
+                    new SweetAlertDialog(AddBranchActivity.this, SweetAlertDialog.SUCCESS_TYPE)
+                            .setTitleText("Good job!")
+                            .setContentText(response.getString("responseMessage"))
+                            .show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                name.setText("");
+                phone.setText("");
+                email.setText("");
+                address.setText("");
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 pDialog.dismiss();
-
-                error.printStackTrace();
                 if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                    new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
+                    new SweetAlertDialog(AddBranchActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Error Occured")
                             .setContentText("Time Out Error Or No Connection")
                             .show();
 
                 } else if (error instanceof AuthFailureError) {
-                    new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
+                    new SweetAlertDialog(AddBranchActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Error Occured")
                             .setContentText("You don't have the rights to perform this operation. " +
                                     "\n Please contact the Administrator")
                             .show();
 
                 } else if (error instanceof ServerError) {
-                    new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
+                    new SweetAlertDialog(AddBranchActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Error Occured")
                             .setContentText("Server Error")
                             .show();
 
                 } else if (error instanceof NetworkError) {
-                    new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
+                    new SweetAlertDialog(AddBranchActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Error Occured")
                             .setContentText("Network Error")
                             .show();
 
                 } else if (error instanceof ParseError) {
-                    new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
+                    new SweetAlertDialog(AddBranchActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Error Occured")
                             .setContentText("Parse Error")
                             .show();
 
                 }
             }
-        });
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                10000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        }){
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String>headers= new HashMap<>();
+                headers.put("Authorization", "Bearer "+new SessionManagement(getApplicationContext()).getToken());
+                return headers;
+            }
+        };
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(request);
     }
 

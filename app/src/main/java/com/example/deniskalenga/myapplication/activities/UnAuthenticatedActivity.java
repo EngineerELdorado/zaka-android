@@ -21,8 +21,8 @@ public class UnAuthenticatedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_un_authenticated);
 
-        registerBtn = (Button)findViewById(R.id.registerBtn);
-        loginBtn = (Button)findViewById(R.id.loginBtn);
+        registerBtn = findViewById(R.id.registerBtn);
+        loginBtn = findViewById(R.id.loginBtn);
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,7 +34,7 @@ public class UnAuthenticatedActivity extends AppCompatActivity {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                //finish();
                 startActivity(new Intent(UnAuthenticatedActivity.this, LoginActivity.class));
             }
         });

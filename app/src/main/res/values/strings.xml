@@ -22,4 +22,6 @@
     <string name="activate">Activate</string>
     <string name="title_activity_users">UsersActivity</string>
     <string name="title_activity_add_user">AddUserActivity</string>
+    <string name="title_activity_branches">BranchesActivity</string>
+    <string name="title_activity_add_branch">AddBranchActivity</string>
 </resources>

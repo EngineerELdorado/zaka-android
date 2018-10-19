@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activities.LoginActivity"
     tools:showIn="@layout/activity_login">
@@ -15,7 +17,7 @@
         <EditText
             android:id="@+id/username"
             android:layout_width="match_parent"
-            android:text="Zaka4854"
+            android:text="superadmin@zaka.com"
             android:hint="Username"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>
@@ -28,7 +30,7 @@
             android:inputType="textPassword"
             android:id="@+id/password"
             android:layout_width="match_parent"
-            android:text="Zaka2018"
+            android:text="123456"
             android:hint="Password"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>

@@ -13,11 +13,17 @@ public class CheckRoles {
     }
 
     public boolean isAdmin(){
-        if(sessionManagement.getRoles().contains(ROLE_ADMIN)){
-            return true;
+        try {
+            if(sessionManagement.getRoles().contains(ROLE_ADMIN)){
+                return true;
+            }
+            else {
+                return false;
+            }
         }
-        else {
-            return false;
+        catch (Exception e){
+            e.fillInStackTrace();
         }
+        return false;
     }
 }

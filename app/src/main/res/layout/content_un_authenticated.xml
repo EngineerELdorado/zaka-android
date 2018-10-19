@@ -11,20 +11,42 @@
     tools:context=".activities.UnAuthenticatedActivity"
     tools:showIn="@layout/activity_un_authenticated">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="20px"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:text="Zaka"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:text="POS"
+            />
+    </LinearLayout>
+
     <Button
-        android:visibility="gone"
+
         android:id="@+id/registerBtn"
         android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAllCaps="false"
-        android:background="@drawable/new_rounded_btn"
+        android:background="@color/colorAccent"
         android:text="@string/create_an_account"
         />
 
     <Button
         android:id="@+id/loginBtn"
-        android:background="@drawable/new_rounded_btn"
+        android:background="@color/colorPrimary"
         android:layout_width="match_parent"
         android:textAllCaps="false"
         android:text="@string/login"

@@ -18,7 +18,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.deniskalenga.myapplication.R;
@@ -35,6 +41,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static com.example.deniskalenga.myapplication.Keys.BACKEND_URL;
 import static com.example.deniskalenga.myapplication.Keys.FULLNAME;
@@ -73,7 +83,7 @@ public class MainActivity extends AppCompatActivity
         userBusinessName.setText(sessionManagement.getBusinessName());
         userBranchname=(TextView)findViewById(R.id.branchName);
         userBranchname.setText(sessionManagement.getBranchName());
-        Log.d("ROLES", sessionManagement.getRoles());
+//        Log.d("ROLES", sessionManagement.getRoles());
         if(new CheckRoles(getApplicationContext()).isAdmin()){
             userBranchname.setVisibility(View.GONE);
         }
@@ -123,7 +133,8 @@ public class MainActivity extends AppCompatActivity
 
     private void fetchBranches() {
 
-        JsonArrayRequest request = new JsonArrayRequest(BACKEND_URL + "/branches/getByBusinessId/" + sessionManagement.getBusinessId(), new Response.Listener<JSONArray>() {
+        Log.v("JWT TOKEN", "Bearer "+new SessionManagement(getApplicationContext()).getToken());
+        JsonArrayRequest request = new JsonArrayRequest(BACKEND_URL + "/branches/business/" + sessionManagement.getBusinessId(), new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 branches.clear();
@@ -155,9 +166,56 @@ public class MainActivity extends AppCompatActivity
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                    error.printStackTrace();
+                        if (error instanceof NoConnectionError) {
+                            error.fillInStackTrace();
+                            error.printStackTrace();
+                            new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Error Occured")
+                                    .setContentText("No connection")
+                                    .show();
+
+                        }
+                        else if (error instanceof TimeoutError){
+                            new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Error Occured")
+                                    .setContentText("Time out")
+                                    .show();
+                        }
+                        else if (error instanceof AuthFailureError) {
+                            new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Error Occured")
+                                    .setContentText("Wrong Username Or Pin")
+                                    .show();
+
+                        } else if (error instanceof ServerError) {
+                            new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Error Occured")
+                                    .setContentText("Server Error")
+                                    .show();
+
+                        } else if (error instanceof NetworkError) {
+                            new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Error Occured")
+                                    .setContentText("Network Error")
+                                    .show();
+
+                        } else if (error instanceof ParseError) {
+                            new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                    .setTitleText("Error Occured")
+                                    .setContentText("Parse Error")
+                                    .show();
+
+                        }
                     }
-                });
+                }){
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String>headers=new HashMap<>();
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                headers.put("Authorization", "Bearer "+new SessionManagement(getApplicationContext()).getToken());
+                return headers;
+            }
+        };
 
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(request);
     }
@@ -210,7 +268,8 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_branches) {
+            startActivity(new Intent(MainActivity.this, BranchesActivity.class));
 
         } else if (id == R.id.nav_users) {
             startActivity(new Intent(MainActivity.this, UsersActivity.class));
@@ -219,6 +278,9 @@ public class MainActivity extends AppCompatActivity
         }else if (id == R.id.nav_myProfile) {
             startActivity(new Intent(MainActivity.this, UpdateProfileActivity.class));
 
+        }else if (id == R.id.nav_add_branches) {
+            startActivity(new Intent(MainActivity.this, AddBranchActivity.class));
+
         } else if (id == R.id.changeUsername) {
             startActivity(new Intent(MainActivity.this, ChangeUsernameActivity.class));
 
@@ -226,6 +288,7 @@ public class MainActivity extends AppCompatActivity
             startActivity(new Intent(MainActivity.this, ChangePasswordActivity.class));
 
         } else if (id == R.id.logout) {
+            finish();
             sessionManagement.logoutUser();
         }
 
@@ -244,6 +307,7 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         setLocalUserData();
+        fetchBranches();
         Log.d("APP_EVENT","Resuming");
     }
 
@@ -251,6 +315,7 @@ public class MainActivity extends AppCompatActivity
     protected void onRestart() {
         super.onRestart();
         setLocalUserData();
+        fetchBranches();
         Log.d("APP_EVENT","Restarting");
     }
 

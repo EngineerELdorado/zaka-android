@@ -22,6 +22,20 @@
             android:title="Tools" />
     </group>
 
+    <item android:id="@+id/business" android:title="Business">
+        <menu>
+            <item
+                android:id="@+id/nav_branches"
+                android:icon="@drawable/ic_menu_slideshow"
+                android:title="Branches" />
+            <item
+                android:id="@+id/nav_add_branches"
+                android:icon="@drawable/ic_menu_slideshow"
+                android:title="Add Branch" />
+
+        </menu>
+    </item>
+
     <item android:id="@+id/hr" android:title="Human Resource">
         <menu>
             <item

@@ -1,6 +1,7 @@
 package com.example.deniskalenga.myapplication.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,9 +13,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
 import com.android.volley.NetworkResponse;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
@@ -33,6 +41,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 import static com.example.deniskalenga.myapplication.Keys.BACKEND_URL;
 import static com.example.deniskalenga.myapplication.Keys.ROLES;
@@ -70,13 +80,20 @@ public class LoginActivity extends AppCompatActivity {
 
     private void doLogin() {
 
+        final SweetAlertDialog pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Loading");
+        pDialog.setCancelable(false);
+        pDialog.show();
+
         Map<String, String>details= new HashMap<>();
-        details.put("userName", usernameTxt.getText().toString());
+        details.put("username", usernameTxt.getText().toString());
         details.put("password", passwordTxt.getText().toString());
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, BACKEND_URL + "/login", new JSONObject(details), new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+
 
                 //Toast.makeText(getApplicationContext(),"Login Successful", Toast.LENGTH_SHORT).show();
             }
@@ -84,7 +101,47 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
-                //Toast.makeText(getApplicationContext(),"Wrong username or password", Toast.LENGTH_SHORT).show();
+                pDialog.dismiss();
+                if (error instanceof NoConnectionError) {
+                    error.fillInStackTrace();
+                    error.printStackTrace();
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("No connection")
+                            .show();
+
+                }
+                else if (error instanceof TimeoutError ){
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Time out")
+                            .show();
+                }
+                else if (error instanceof AuthFailureError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Wrong Username Or Pin")
+                            .show();
+
+                } else if (error instanceof ServerError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Server Error")
+                            .show();
+
+                } else if (error instanceof NetworkError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Network Error")
+                            .show();
+
+                } else if (error instanceof ParseError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Parse Error")
+                            .show();
+
+                }
             }
 
 
@@ -115,7 +172,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void fetchTheUserDetails(final String userName){
 
-        JsonObjectRequest request = new JsonObjectRequest(BACKEND_URL + "/users/getOneByUsername/" + userName, null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest request = new JsonObjectRequest(BACKEND_URL + "/users/username/" + userName, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
 
@@ -125,14 +182,22 @@ public class LoginActivity extends AppCompatActivity {
                     user.setFullName(response.getString("fullName"));
                     user.setPhone(response.getString("phoneNumber"));
                     user.setEmail(response.getString("email"));
-                    user.setUsername(response.getString("userName"));
+                    user.setUsername(response.getString("username"));
                     sessionManagement.createUserSession(user);
-                    sessionManagement.setBusinessId(response.getJSONObject("business").getString("id"));
-                    sessionManagement.setBusinessName(response.getJSONObject("business").getString("name"));
-                    sessionManagement.setBranchId(response.getJSONObject("branch").getString("id"));
-                    sessionManagement.setBranchName(response.getJSONObject("branch").getString("name"));
+
+
+                    if (response.getJSONObject("business")!=null && response.getJSONObject("branch")!=null){
+                        sessionManagement.setBusinessId(response.getJSONObject("business").getString("id"));
+                        sessionManagement.setBusinessName(response.getJSONObject("business").getString("name"));
+                        sessionManagement.setBranchId(response.getJSONObject("branch").getString("id"));
+                        sessionManagement.setBranchName(response.getJSONObject("branch").getString("name"));
+                    }
+                    else{
+                        sessionManagement.setBusinessName("Zaka");
+                        sessionManagement.setBranchName("Official");
+                    }
                     StringBuilder roles = new StringBuilder();
-                    JSONArray rolesArray = response.getJSONArray("roles");
+                    JSONArray rolesArray = response.getJSONArray("rolePermissions");
                     for (int i=0; i<rolesArray.length();i++){
                         JSONObject object = rolesArray.getJSONObject(i);
                         roles.append(object.getString("name")+" ");
@@ -143,16 +208,58 @@ public class LoginActivity extends AppCompatActivity {
                     sessionManagement.setRoles(roles.toString());
 
                     Toast.makeText(getApplicationContext(),"Welcome "+user.getFullName(),Toast.LENGTH_SHORT).show();
-                    finish();
+
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                } catch (JSONException error) {
+                    error.printStackTrace();
+
+
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
+                if (error instanceof NoConnectionError) {
+                    error.fillInStackTrace();
+                    error.printStackTrace();
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("No connection")
+                            .show();
+
+                }
+                else if (error instanceof TimeoutError ){
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Time out")
+                            .show();
+                }
+                else if (error instanceof AuthFailureError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Wrong Username Or Pin")
+                            .show();
+
+                } else if (error instanceof ServerError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Server Error")
+                            .show();
+
+                } else if (error instanceof NetworkError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Network Error")
+                            .show();
+
+                } else if (error instanceof ParseError) {
+                    new SweetAlertDialog(LoginActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Error Occured")
+                            .setContentText("Parse Error")
+                            .show();
+
+                }
             }
         });
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(request);

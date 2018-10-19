@@ -1,11 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activities.RegisterActivity"
+    android:orientation="vertical"
+    android:gravity="center"
     tools:showIn="@layout/activity_register">
 
-</android.support.constraint.ConstraintLayout>
+    <EditText
+        android:id="@+id/businessName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Business Name"
+        android:text="Bus"
+        android:layout_margin="20dp"
+        />
+
+    <LinearLayout
+        android:weightSum="2"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/fullName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Your Name"
+            android:layout_weight="1"
+            />
+        <EditText
+            android:id="@+id/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Your Email"
+            android:layout_weight="1"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:weightSum="2"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/phoneNumber"
+            android:text="Phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            />
+        <EditText
+            android:text="Pin"
+            android:id="@+id/pin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/submit"
+        android:background="@color/colorPrimary"
+        android:layout_margin="20px"
+        android:layout_width="match_parent"
+        android:text="Create Business"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
